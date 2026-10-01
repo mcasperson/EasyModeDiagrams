@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Octopus Rollouts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Design tokens taken from octopus.com */
+  :root {
+    --navy-100: #1d3c56;
+    --navy-500: #10212f;
+    --navy-600: #0c1a24;
+    --cyan-200: #1fc0ff;
+    --cyan-300: #0d80d8;
+    --grey-400: #bccfde;
+    --white: #fff;
+    --glass-border: hsla(0, 0%, 100%, .2);
+    --glass-background: linear-gradient(263.36deg, hsla(0, 0%, 100%, .12) -46.77%, rgba(147, 225, 255, .12) 86.43%);
+    --navy-radial-gradient: radial-gradient(388.57% 137.97% at 97.9% 0%, #002a49 0%, #072338 19.79%, #10212f 45.31%, #0c1a24 100%);
+    --font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --draw: 500ms;
+  }
+
+  html {
+    min-height: 100%;
+    background: var(--navy-600);
+  }
+
+  body {
+    margin: 0;
+    padding: 48px 40px;
+    min-height: 100vh;
+    box-sizing: border-box;
+    font-family: var(--font-family);
+    color: var(--white);
+    background:
+      radial-gradient(circle, rgba(255, 255, 255, .08) 1px, transparent 1px) 0 0 / 24px 24px,
+      var(--navy-radial-gradient);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .diagram {
+    display: grid;
+    grid-template-columns: 180px 1fr 40px 1fr 40px 1fr 40px 1fr;
+    grid-template-rows: 140px 56px 160px 56px 160px 56px 160px;
+    max-width: 1300px;
+    margin: 0 auto;
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  .label {
+    grid-column: 1;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--cyan-200);
+  }
+
+  .box {
+    background: var(--glass-background), var(--navy-500);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: 0 14px 20px 0 rgba(0, 0, 0, .25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 12px;
+    line-height: 1.3;
+  }
+
+  .box.brand {
+    background: linear-gradient(27deg, var(--cyan-300), var(--cyan-200));
+    border-color: transparent;
+    font-size: 32px;
+    font-weight: 700;
+  }
+
+  /* Arrows are hidden until they receive the "show" class */
+  .v-arrow {
+    position: relative;
+  }
+  .v-arrow::before,
+  .v-arrow::after {
+    content: "";
+    position: absolute;
+    opacity: 0;
+  }
+
+  /* Vertical arrow: line with a downward triangle at the bottom */
+  .v-arrow::before {
+    left: 50%;
+    top: 0;
+    bottom: 20px;
+    width: 6px;
+    margin-left: -3px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, var(--cyan-300), var(--cyan-200));
+    box-shadow: 0 0 12px rgba(31, 192, 255, .6);
+    transform-origin: top;
+  }
+  .v-arrow::after {
+    left: 50%;
+    bottom: 0;
+    margin-left: -14px;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 22px solid var(--cyan-200);
+    filter: drop-shadow(0 0 8px rgba(31, 192, 255, .6));
+  }
+
+  /* Draw the line, then pop the arrow head in */
+  .v-arrow.show::before {
+    animation: grow-y var(--draw) ease-out forwards;
+  }
+  .show::after {
+    animation: head 200ms ease-out var(--draw) forwards;
+  }
+
+  /* Fade out an arrow that has been replaced by the next one */
+  .fade::before,
+  .fade::after {
+    animation: fade 300ms ease-in forwards;
+  }
+
+  @keyframes fade {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+  @keyframes grow-y {
+    from { opacity: 1; transform: scaleY(0); }
+    to   { opacity: 1; transform: scaleY(1); }
+  }
+  @keyframes head {
+    from { opacity: 0; transform: scale(0.3); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+</style>
+</head>
+<body>
+  <div class="diagram">
+    <!-- Row 1: Octopus -->
+    <div class="box brand" style="grid-row: 1; grid-column: 2 / -1;">Octopus</div>
+
+    <!-- Row 2: arrows to environments -->
+    <div class="v-arrow" id="octo-dev" style="grid-row: 2; grid-column: 2;"></div>
+    <div class="v-arrow" id="octo-p10" style="grid-row: 2; grid-column: 4;"></div>
+    <div class="v-arrow" id="octo-p50" style="grid-row: 2; grid-column: 6;"></div>
+    <div class="v-arrow" id="octo-p100" style="grid-row: 2; grid-column: 8;"></div>
+
+    <!-- Row 3: Environments -->
+    <div class="label" style="grid-row: 3;">Environments</div>
+    <div class="box" style="grid-row: 3; grid-column: 2;">Development</div>
+    <div class="box" style="grid-row: 3; grid-column: 4;">Prod 10</div>
+    <div class="box" style="grid-row: 3; grid-column: 6;">Prod 50</div>
+    <div class="box" style="grid-row: 3; grid-column: 8;">Prod 100</div>
+
+    <!-- Row 4: arrows to actions -->
+    <div class="v-arrow" id="dev-action" style="grid-row: 4; grid-column: 2;"></div>
+    <div class="v-arrow" id="p10-action" style="grid-row: 4; grid-column: 4;"></div>
+    <div class="v-arrow" id="p50-action" style="grid-row: 4; grid-column: 6;"></div>
+    <div class="v-arrow" id="p100-action" style="grid-row: 4; grid-column: 8;"></div>
+
+    <!-- Row 5: Actions -->
+    <div class="label" style="grid-row: 5;">Action</div>
+    <div class="box" style="grid-row: 5; grid-column: 2;">Apply<br>Rollout<br>Manifest<br>100%</div>
+    <div class="box" style="grid-row: 5; grid-column: 4;">Apply<br>Rollout<br>Manifest<br>10%</div>
+    <div class="box" style="grid-row: 5; grid-column: 6;">Promote<br>Rollout to 50%</div>
+    <div class="box" style="grid-row: 5; grid-column: 8;">Promote<br>Rollout to 100%</div>
+
+    <!-- Row 6: arrows to clusters -->
+    <div class="v-arrow" id="dev-k8s" style="grid-row: 6; grid-column: 2;"></div>
+    <div class="v-arrow" id="p10-k8s" style="grid-row: 6; grid-column: 4;"></div>
+    <div class="v-arrow" id="p50-k8s" style="grid-row: 6; grid-column: 6;"></div>
+    <div class="v-arrow" id="p100-k8s" style="grid-row: 6; grid-column: 8;"></div>
+
+    <!-- Row 7: K8s Clusters -->
+    <div class="label" style="grid-row: 7;">K8s Clusters</div>
+    <div class="box" style="grid-row: 7; grid-column: 2;">Development<br>K8s<br>Namespace</div>
+    <div class="box" style="grid-row: 7; grid-column: 4 / -1;">Production<br>K8s Namespace</div>
+  </div>
+
+<script>
+  // Order in which arrows are drawn.
+  const sequence = [
+    "octo-dev", "dev-action", "dev-k8s",
+    "octo-p10", "p10-action", "p10-k8s",
+    "octo-p50", "p50-action", "p50-k8s",
+    "octo-p100", "p100-action", "p100-k8s",
+  ];
+
+  const STEP_MS = 1000;       // time between arrows
+  const HOLD_MS = 3000;       // pause on the completed diagram before restarting
+
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+  async function run() {
+    while (true) {
+      document.querySelectorAll(".fade").forEach(el => el.classList.remove("fade"));
+      await sleep(800);
+
+      let previous = null;
+      for (const id of sequence) {
+        if (previous) {
+          previous.classList.replace("show", "fade");
+        }
+        previous = document.getElementById(id);
+        previous.classList.add("show");
+        await sleep(STEP_MS);
+      }
+
+      await sleep(HOLD_MS);
+      previous.classList.replace("show", "fade");
+    }
+  }
+
+  run();
+</script>
+</body>
+</html>
