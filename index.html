@@ -130,6 +130,57 @@
     animation: fade 300ms ease-in forwards;
   }
 
+  /* Callout bubble pointing back at an arrow */
+  .callout {
+    position: absolute;
+    z-index: 10;
+    top: 50%;
+    left: calc(50% + 32px);
+    width: max-content;
+    max-width: 340px;
+    padding: 16px 20px;
+    border: 1px solid var(--cyan-200);
+    border-radius: 12px;
+    background: var(--navy-100);
+    box-shadow: 0 0 24px rgba(31, 192, 255, .35), 0 14px 20px rgba(0, 0, 0, .35);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.45;
+    opacity: 0;
+    transform: translate(-8px, -50%);
+    transition: opacity 300ms ease, transform 300ms ease;
+    pointer-events: none;
+  }
+  .callout::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -8px;
+    width: 14px;
+    height: 14px;
+    margin-top: -7px;
+    background: var(--navy-100);
+    border-left: 1px solid var(--cyan-200);
+    border-bottom: 1px solid var(--cyan-200);
+    transform: rotate(45deg);
+  }
+  /* Callout placed to the left of its arrow, for the right-most column */
+  .callout.left {
+    left: auto;
+    right: calc(50% + 32px);
+    transform: translate(8px, -50%);
+  }
+  .callout.left::before {
+    left: auto;
+    right: -8px;
+    transform: rotate(-135deg);
+  }
+  .callout.visible,
+  .callout.left.visible {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+
   @keyframes fade {
     from { opacity: 1; }
     to   { opacity: 0; }
@@ -163,10 +214,18 @@
     <div class="box" style="grid-row: 3; grid-column: 8;">Prod 100</div>
 
     <!-- Row 4: arrows to actions -->
-    <div class="v-arrow" id="dev-action" style="grid-row: 4; grid-column: 2;"></div>
-    <div class="v-arrow" id="p10-action" style="grid-row: 4; grid-column: 4;"></div>
-    <div class="v-arrow" id="p50-action" style="grid-row: 4; grid-column: 6;"></div>
-    <div class="v-arrow" id="p100-action" style="grid-row: 4; grid-column: 8;"></div>
+    <div class="v-arrow" id="dev-action" style="grid-row: 4; grid-column: 2;">
+      <div class="callout" id="dev-callout">Development environment always routes 100% of traffic to the new revision</div>
+    </div>
+    <div class="v-arrow" id="p10-action" style="grid-row: 4; grid-column: 4;">
+      <div class="callout" id="p10-callout">Production traffic is a new manifest starting at 10% traffic</div>
+    </div>
+    <div class="v-arrow" id="p50-action" style="grid-row: 4; grid-column: 6;">
+      <div class="callout" id="p50-callout">Promote rollout to 50% traffic with CLI</div>
+    </div>
+    <div class="v-arrow" id="p100-action" style="grid-row: 4; grid-column: 8;">
+      <div class="callout left" id="p100-callout">Promote rollout to 100% traffic with CLI</div>
+    </div>
 
     <!-- Row 5: Actions -->
     <div class="label" style="grid-row: 5;">Action</div>
@@ -198,6 +257,16 @@
 
   const STEP_MS = 1000;       // time between arrows
   const HOLD_MS = 3000;       // pause on the completed diagram before restarting
+  const CALLOUT_MS = 2000;    // how long a callout stays on screen
+  const CALLOUT_FADE_MS = 300;
+
+  // Callouts shown once the given arrow has been drawn.
+  const callouts = {
+    "dev-action": "dev-callout",
+    "p10-action": "p10-callout",
+    "p50-action": "p50-callout",
+    "p100-action": "p100-callout",
+  };
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -214,6 +283,14 @@
         previous = document.getElementById(id);
         previous.classList.add("show");
         await sleep(STEP_MS);
+
+        if (callouts[id]) {
+          const callout = document.getElementById(callouts[id]);
+          callout.classList.add("visible");
+          await sleep(CALLOUT_FADE_MS + CALLOUT_MS);
+          callout.classList.remove("visible");
+          await sleep(CALLOUT_FADE_MS);
+        }
       }
 
       await sleep(HOLD_MS);
