@@ -203,7 +203,9 @@
     <!-- Row 2: arrows to environments -->
     <div class="v-arrow" id="octo-dev" style="grid-row: 2; grid-column: 2;"></div>
     <div class="v-arrow" id="octo-p10" style="grid-row: 2; grid-column: 4;"></div>
-    <div class="v-arrow" id="octo-p50" style="grid-row: 2; grid-column: 6;"></div>
+    <div class="v-arrow" id="octo-p50" style="grid-row: 2; grid-column: 6;">
+      <div class="callout" id="p50-env-callout">Traffic increase is modelled as environment progression</div>
+    </div>
     <div class="v-arrow" id="octo-p100" style="grid-row: 2; grid-column: 8;"></div>
 
     <!-- Row 3: Environments -->
@@ -227,8 +229,8 @@
       <div class="callout left" id="p100-callout">Promote rollout to 100% traffic with CLI</div>
     </div>
 
-    <!-- Row 5: Actions -->
-    <div class="label" style="grid-row: 5;">Action</div>
+    <!-- Row 5: Steps -->
+    <div class="label" style="grid-row: 5;">Step</div>
     <div class="box" style="grid-row: 5; grid-column: 2;">Apply<br>Rollout<br>Manifest<br>100%</div>
     <div class="box" style="grid-row: 5; grid-column: 4;">Apply<br>Rollout<br>Manifest<br>10%</div>
     <div class="box" style="grid-row: 5; grid-column: 6;">Promote<br>Rollout to 50%</div>
@@ -264,6 +266,7 @@
   const callouts = {
     "dev-action": "dev-callout",
     "p10-action": "p10-callout",
+    "octo-p50": "p50-env-callout",
     "p50-action": "p50-callout",
     "p100-action": "p100-callout",
   };
